@@ -1,10 +1,9 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    
+
     const webview = b.dependency("webview", .{});
 
     const webviewRaw = b.addTranslateC(.{
@@ -12,7 +11,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .target = target,
     }).createModule();
-    
+
     _ = b.addModule("webview", .{
         .root_source_file = b.path("src/webview.zig"),
         //.dependencies = &[_]std.Build.ModuleDependency{},
@@ -47,17 +46,15 @@ pub fn build(b: *std.Build) void {
     //     }
     // }
 
-    const staticLib = b.addStaticLibrary(.{
+    const staticLib = b.addLibrary(.{
         .name = "webviewStatic",
-        .optimize = optimize,
-        .target = target,
+        .linkage = .static,
     });
     staticLib.addIncludePath(webview.path("core/include/webview/"));
-    staticLib.defineCMacro("WEBVIEW_STATIC", null);
     staticLib.linkLibCpp();
     switch (target.query.os_tag orelse @import("builtin").os.tag) {
         .windows => {
-            staticLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{"-std=c++14"} });
+            staticLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++14", "-DWEBVIEW_STATIC" } });
             staticLib.addIncludePath(b.path("external/WebView2/"));
             staticLib.linkSystemLibrary("ole32");
             staticLib.linkSystemLibrary("shlwapi");
@@ -67,11 +64,11 @@ pub fn build(b: *std.Build) void {
             staticLib.linkSystemLibrary("user32");
         },
         .macos => {
-            staticLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{"-std=c++11"} });
+            staticLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++11", "-DWEBVIEW_STATIC" } });
             staticLib.linkFramework("WebKit");
         },
         .freebsd => {
-            staticLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{"-std=c++11"} });
+            staticLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++11", "-DWEBVIEW_STATIC" } });
             staticLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/cairo/" });
             staticLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/gtk-3.0/" });
             staticLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/glib-2.0/" });
@@ -86,24 +83,23 @@ pub fn build(b: *std.Build) void {
             staticLib.linkSystemLibrary("webkit2gtk-4.0");
         },
         else => {
-            staticLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{"-std=c++11"} });
+            staticLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++11", "-DWEBVIEW_STATIC" } });
             staticLib.linkSystemLibrary("gtk+-3.0");
             staticLib.linkSystemLibrary("webkit2gtk-4.0");
         },
     }
     b.installArtifact(staticLib);
 
-    const sharedLib = b.addSharedLibrary(.{
+    const sharedLib = b.addLibrary(.{
         .name = "webviewShared",
-        .optimize = optimize,
-        .target = target,
+        .linkage = .dynamic,
     });
     sharedLib.addIncludePath(webview.path("core/include/webview/"));
     sharedLib.defineCMacro("WEBVIEW_BUILD_SHARED", null);
     sharedLib.linkLibCpp();
     switch (target.query.os_tag orelse @import("builtin").os.tag) {
         .windows => {
-            sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{"-std=c++14"} });
+            sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++14", "-DWEBVIEW_BUILD_SHARED" } });
             sharedLib.addIncludePath(b.path("external/WebView2/"));
             sharedLib.linkSystemLibrary("ole32");
             sharedLib.linkSystemLibrary("shlwapi");
@@ -113,11 +109,11 @@ pub fn build(b: *std.Build) void {
             sharedLib.linkSystemLibrary("user32");
         },
         .macos => {
-            sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{"-std=c++11"} });
+            sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++11", "-DWEBVIEW_BUILD_SHARED" } });
             sharedLib.linkFramework("WebKit");
         },
         .freebsd => {
-            sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{"-std=c++11"} });
+            sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++11", "-DWEBVIEW_BUILD_SHARED" } });
             sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/cairo/" });
             sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/gtk-3.0/" });
             sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/glib-2.0/" });
@@ -132,7 +128,7 @@ pub fn build(b: *std.Build) void {
             sharedLib.linkSystemLibrary("webkit2gtk-4.0");
         },
         else => {
-            sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{"-std=c++11"} });
+            sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++11", "-DWEBVIEW_BUILD_SHARED" } });
             sharedLib.linkSystemLibrary("gtk+-3.0");
             sharedLib.linkSystemLibrary("webkit2gtk-4.0");
         },
