@@ -90,50 +90,50 @@ pub fn build(b: *std.Build) void {
     }
     b.installArtifact(staticLib);
 
-    const sharedLib = b.addLibrary(.{
-        .name = "webviewShared",
-        .linkage = .dynamic,
-    });
-    sharedLib.addIncludePath(webview.path("core/include/webview/"));
-    sharedLib.defineCMacro("WEBVIEW_BUILD_SHARED", null);
-    sharedLib.linkLibCpp();
-    switch (target.query.os_tag orelse @import("builtin").os.tag) {
-        .windows => {
-            sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++14", "-DWEBVIEW_BUILD_SHARED" } });
-            sharedLib.addIncludePath(b.path("external/WebView2/"));
-            sharedLib.linkSystemLibrary("ole32");
-            sharedLib.linkSystemLibrary("shlwapi");
-            sharedLib.linkSystemLibrary("version");
-            sharedLib.linkSystemLibrary("advapi32");
-            sharedLib.linkSystemLibrary("shell32");
-            sharedLib.linkSystemLibrary("user32");
-        },
-        .macos => {
-            sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++11", "-DWEBVIEW_BUILD_SHARED" } });
-            sharedLib.linkFramework("WebKit");
-        },
-        .freebsd => {
-            sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++11", "-DWEBVIEW_BUILD_SHARED" } });
-            sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/cairo/" });
-            sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/gtk-3.0/" });
-            sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/glib-2.0/" });
-            sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/lib/glib-2.0/include/" });
-            sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/webkitgtk-4.0/" });
-            sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/pango-1.0/" });
-            sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/harfbuzz/" });
-            sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/gdk-pixbuf-2.0/" });
-            sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/atk-1.0/" });
-            sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/libsoup-3.0/" });
-            sharedLib.linkSystemLibrary("gtk-3");
-            sharedLib.linkSystemLibrary("webkit2gtk-4.0");
-        },
-        else => {
-            sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++11", "-DWEBVIEW_BUILD_SHARED" } });
-            sharedLib.linkSystemLibrary("gtk+-3.0");
-            sharedLib.linkSystemLibrary("webkit2gtk-4.0");
-        },
-    }
-    b.installArtifact(sharedLib);
+    // const sharedLib = b.addLibrary(.{
+    //     .name = "webviewShared",
+    //     .linkage = .dynamic,
+    // });
+    // sharedLib.addIncludePath(webview.path("core/include/webview/"));
+    // sharedLib.defineCMacro("WEBVIEW_BUILD_SHARED", null);
+    // sharedLib.linkLibCpp();
+    // switch (target.query.os_tag orelse @import("builtin").os.tag) {
+    //     .windows => {
+    //         sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++14", "-DWEBVIEW_BUILD_SHARED" } });
+    //         sharedLib.addIncludePath(b.path("external/WebView2/"));
+    //         sharedLib.linkSystemLibrary("ole32");
+    //         sharedLib.linkSystemLibrary("shlwapi");
+    //         sharedLib.linkSystemLibrary("version");
+    //         sharedLib.linkSystemLibrary("advapi32");
+    //         sharedLib.linkSystemLibrary("shell32");
+    //         sharedLib.linkSystemLibrary("user32");
+    //     },
+    //     .macos => {
+    //         sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++11", "-DWEBVIEW_BUILD_SHARED" } });
+    //         sharedLib.linkFramework("WebKit");
+    //     },
+    //     .freebsd => {
+    //         sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++11", "-DWEBVIEW_BUILD_SHARED" } });
+    //         sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/cairo/" });
+    //         sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/gtk-3.0/" });
+    //         sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/glib-2.0/" });
+    //         sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/lib/glib-2.0/include/" });
+    //         sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/webkitgtk-4.0/" });
+    //         sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/pango-1.0/" });
+    //         sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/harfbuzz/" });
+    //         sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/gdk-pixbuf-2.0/" });
+    //         sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/atk-1.0/" });
+    //         sharedLib.addIncludePath(.{ .cwd_relative = "/usr/local/include/libsoup-3.0/" });
+    //         sharedLib.linkSystemLibrary("gtk-3");
+    //         sharedLib.linkSystemLibrary("webkit2gtk-4.0");
+    //     },
+    //     else => {
+    //         sharedLib.addCSourceFile(.{ .file = webview.path("core/src/webview.cc"), .flags = &.{ "-std=c++11", "-DWEBVIEW_BUILD_SHARED" } });
+    //         sharedLib.linkSystemLibrary("gtk+-3.0");
+    //         sharedLib.linkSystemLibrary("webkit2gtk-4.0");
+    //     },
+    // }
+    // b.installArtifact(sharedLib);
 
     const unit_tests = b.addTest(.{
         .root_source_file = b.path("src/test.zig"),
